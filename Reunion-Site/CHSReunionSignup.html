@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Class of 2005 — 20th Reunion</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --card: #111a2b;
+      --muted: #a9c4e8;
+      --text: #e6eefc;
+      --accent: #1e73d7; /* lighter blue */
+      --accent2: #ffcc33;
+    }
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color: var(--text); background: var(--bg); }
+    a { color: var(--accent2); }
+    header { display: flex; align-items: center; gap: 20px; padding: 20px; }
+    header img { height: 80px; border-radius: 6px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); background: #fff; padding: 4px; }
+    h1 { margin: 0; font-size: 1.8em; color: var(--accent2); }
+    h2 { margin: 0; font-weight: normal; font-size: 1.1em; color: var(--accent); }
+    p.tagline { margin: 6px 0 0; font-size: 1em; color: var(--muted); }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 0 20px 30px; }
+    .layout { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 18px; }
+    @media (max-width:900px){ .layout { grid-template-columns: 1fr; } }
+    .card { background: var(--card); padding: 18px; border-radius: 12px; }
+    .section-title { margin: 0 0 8px; font-size: 1.3em; }
+    label { display: block; margin-top: 10px; font-size: 0.95em; color: var(--muted); }
+    input, select, textarea { width: 100%; padding: 10px 12px; margin-top: 6px; border-radius: 8px; border: 1px solid #1d2a44; background:#0e1729; color: var(--text); }
+    small.help { color: var(--muted); display:block; margin-top: 4px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width:600px){ .row { grid-template-columns: 1fr; } }
+    .btn { display:inline-block; padding: 10px 14px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-ghost { background: transparent; color: var(--text); border:1px solid #2a395e; }
+    .totals { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:10px; }
+    .badge { display:inline-block; padding:6px 10px; border-radius:999px; background:#0e1729; border:1px solid #22345b; color: var(--muted); font-size:12px; }
+    .big { font-size: 1.2em; font-weight: 800; }
+    .note { font-size: 0.9em; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <img src="https://cache.bsnsports.com/comp/sls/get/1/4919?f=jpg&sid=4919&ts=1638206562" alt="Coeur d'Alene Vikings Logo">
+      <div>
+        <h1>Class of 2005 — 20th Reunion</h1>
+        <h2>Sept 27, 2025 • 6–10 PM • CDA Eagles Ballroom</h2>
+        <p class="tagline">Plus: FREE tailgate event on Sept 26 before the homecoming football game!</p>
+      </div>
+    </header>
+
+    <div class="layout">
+      <!-- Sign-up form -->
+      <section class="card">
+        <h3 class="section-title">Sign Up</h3>
+        <form id="signupForm" method="POST" action="">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" required placeholder="you@example.com" />
+
+          <label for="tickets">Number of Tickets ($100 each)</label>
+          <select id="tickets" name="tickets">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+          <small class="help">Each ticket must have a name. Use the name you went by in high school. For guests, select “Significant Other” and enter their full name.</small>
+
+          <div id="attendees" style="margin-top:10px"></div>
+
+          <label for="notes">Notes (dietary, accessibility, etc.)</label>
+          <textarea id="notes" name="notes" rows="3" placeholder="e.g., vegetarian meal, nut allergy, wheelchair access"></textarea>
+
+          <div class="totals">
+            <span class="badge">Ticket price: $100 each</span>
+            <span class="big" id="totalDue">$100.00</span>
+          </div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px">
+            <button type="submit" class="btn btn-primary">Submit Sign-Up</button>
+            <button type="button" id="downloadICS" class="btn btn-ghost">Add to Calendar</button>
+          </div>
+          <p class="note" style="margin-top:8px">After submitting, please complete payment below. Your spot is confirmed once payment is received.</p>
+        </form>
+      </section>
+
+      <!-- Payment -->
+      <aside class="card">
+        <h3 class="section-title">Buy Tickets</h3>
+        <p class="note">Amount & note will auto-fill based on ticket quantity.</p>
+        <div style="display:grid; gap:10px">
+          <a id="paypalBtn" class="btn btn-primary" href="https://paypal.me/AEdling" target="_blank" rel="noopener">Pay with PayPal</a>
+          <a id="venmoBtn" class="btn btn-ghost" href="https://venmo.com/Anders-Edling" target="_blank" rel="noopener">Pay with Venmo</a>
+        </div>
+        <div style="height:1px;background:#22345b;margin:14px 0"></div>
+        <label class="note">Payment note (included automatically)</label>
+        <input id="payNote" readonly value="Vikings 2005 tickets — 1 ticket(s)" />
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const PRICE = 100;
+    const PAYPAL_BASE = 'https://paypal.me/AEdling';
+    const VENMO_USER = 'Anders-Edling';
+
+    const $ = (s)=>document.querySelector(s);
+
+    function money(n){ return `$${(Math.round(n*100)/100).toFixed(2)}`; }
+
+    function buildAttendeeFields(){
+      const qty = parseInt($('#tickets').value,10) || 1;
+      const wrap = $('#attendees');
+      wrap.innerHTML = '';
+      for(let i=1;i<=qty;i++){
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.style.padding = '12px';
+        div.style.marginTop = '8px';
+        div.style.background = '#0e1729';
+        div.style.border = '1px solid #1d2a44';
+        div.innerHTML = `
+          <div class="row">
+            <div>
+              <label>Attendee ${i} — Name <small class="help">Use your high school name; for a guest, enter their full name.</small></label>
+              <input name="attendee${i}Name" required placeholder="e.g., Jamie (maiden) Smith" />
+            </div>
+            <div>
+              <label>Relation</label>
+              <select name="attendee${i}Relation">
+                <option value="Alumni" ${i===1?'selected':''}>Alumni (Class of 2005)</option>
+                <option value="Significant Other">Significant Other</option>
+                <option value="Guest">Guest</option>
+              </select>
+            </div>
+          </div>`;
+        wrap.appendChild(div);
+      }
+    }
+
+    function updateTotalsAndLinks(){
+      const qty = parseInt($('#tickets').value,10) || 1;
+      $('#totalDue').textContent = money(qty*PRICE);
+      const note = `Vikings 2005 tickets — ${qty} ticket(s)`;
+      $('#payNote').value = note;
+
+      const pp = `${PAYPAL_BASE}/${(qty*PRICE).toFixed(2)}`;
+      $('#paypalBtn').href = pp;
+
+      const venmo = new URL(`https://venmo.com/${VENMO_USER}`);
+      venmo.searchParams.set('txn','pay');
+      venmo.searchParams.set('amount', (qty*PRICE).toFixed(2));
+      venmo.searchParams.set('note', note);
+      $('#venmoBtn').href = venmo.toString();
+    }
+
+    function downloadICS(){
+      const ics = [
+        'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Vikings2005//EN','CALSCALE:GREGORIAN',
+        'BEGIN:VEVENT','DTSTART:20250927T180000','DTEND:20250927T220000','SUMMARY:Class of 2005 — 20th Reunion','LOCATION:CDA Eagles Ballroom','DESCRIPTION:Plus: free tailgate on Sept 26 before the homecoming football game','END:VEVENT','END:VCALENDAR' 
+      ].join('\r\n');
+      const blob = new Blob([ics],{type:'text/calendar'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download='reunion.ics'; a.click(); URL.revokeObjectURL(url);
+    }
+
+    document.querySelector('#tickets').addEventListener('change', ()=>{ buildAttendeeFields(); updateTotalsAndLinks(); });
+    document.querySelector('#downloadICS').addEventListener('click', downloadICS);
+
+    document.querySelector('#signupForm').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      alert('Thanks! Your sign-up has been recorded locally. Now complete your payment below.');
+    });
+
+    buildAttendeeFields();
+    updateTotalsAndLinks();
+  </script>
+</body>
+</html>
